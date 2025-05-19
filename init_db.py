@@ -27,7 +27,7 @@ def init_db():
         
         # Create assistants
         assistants = [
-            Assistant(name='Juan Pérez', code='ABC123', active=True),
+            Assistant(name='Bryan Ramos', code='ABC123', active=True),
             Assistant(name='María García', code='DEF456', active=True),
             Assistant(name='Carlos López', code='GHI789', active=True),
             Assistant(name='Ana Martínez', code='JKL012', active=True),
@@ -36,6 +36,20 @@ def init_db():
         
         for assistant in assistants:
             db.session.add(assistant)
+
+        # Create assistants user
+        assistants_user = [
+            User(username='Bryan Ramos', email='bryan@email.com', is_admin=True, is_assistant=True),
+            User(username='María García', email='maria@email.com', is_admin=True, is_assistant=True),
+            User(username='Carlos López', email='carlos@email.com', is_admin=False, is_assistant=True),
+            User(username='Ana Martínez', email='ana@email.com', is_admin=True, is_assistant=True),
+            User(username='Pedro Rodríguez', email='pedro@email.com', is_admin=False, is_assistant=True)
+        ]
+
+        for assistant_user in assistants_user:
+            assistant_user.set_password('PPP2025')
+            db.session.add(assistant_user)
+
         
         # Commit to get IDs
         db.session.commit()

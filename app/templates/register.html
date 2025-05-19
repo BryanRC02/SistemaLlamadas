@@ -23,13 +23,17 @@
                         <label for="password" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_assistant" name="is_assistant">
+                        <label class="form-check-label" for="is_assistant">Este usuario es un asistente</label>
+                    </div>
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Registrarse</button>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center">
-                <p class="mb-0">¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a></p>
+                <p class="mb-0"><a href="{{ url_for('main.index') }}">Volver al inicio</a></p>
             </div>
         </div>
     </div>

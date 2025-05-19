@@ -24,6 +24,10 @@ def login():
         
         login_user(user, remember=remember)
         
+        # Comprobar si el usuario es un asistente
+        if user.is_assistant:
+            return redirect(url_for('main.enroll'))
+        
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('main.index')
@@ -40,13 +44,16 @@ def logout():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+    # Solo los administradores pueden registrar nuevos usuarios
+    if not current_user.is_authenticated or not current_user.is_admin:
+        flash('Solo los administradores pueden registrar nuevos usuarios')
+        return redirect(url_for('auth.login'))
     
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        is_assistant = 'is_assistant' in request.form
         
         if User.query.filter_by(username=username).first():
             flash('El nombre de usuario ya está en uso')
@@ -56,7 +63,7 @@ def register():
             flash('El correo electrónico ya está en uso')
             return redirect(url_for('auth.register'))
         
-        user = User(username=username, email=email)
+        user = User(username=username, email=email, is_assistant=is_assistant)
         user.set_password(password)
         
         # Make the first user an admin
@@ -66,7 +73,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         
-        flash('¡Registro exitoso! Ahora puede iniciar sesión')
-        return redirect(url_for('auth.login'))
+        flash('¡Registro exitoso!')
+        return redirect(url_for('main.index'))
     
     return render_template('register.html') 

@@ -66,7 +66,7 @@ def register():
         user = User(username=username, email=email, is_assistant=is_assistant)
         user.set_password(password)
         
-        # Make the first user an admin
+        # Hacer el primer usuario un administrador
         if User.query.count() == 0:
             user.is_admin = True
         

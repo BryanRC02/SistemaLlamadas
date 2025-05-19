@@ -8,7 +8,7 @@ from app.models.models import Assistant
 admin_bp = Blueprint('admin', __name__, url_prefix='/asistentes')
 
 def generate_assistant_code():
-    """Generate a random 6-character code for assistants"""
+    """Generar un código aleatorio de 6 caracteres para los asistentes"""
     chars = string.ascii_uppercase + string.digits
     while True:
         code = ''.join(random.choice(chars) for _ in range(6))
@@ -17,7 +17,7 @@ def generate_assistant_code():
 
 @admin_bp.before_request
 def check_admin():
-    """Ensure only admins can access these routes"""
+    """Asegurar que solo los administradores puedan acceder a estas rutas"""
     if not current_user.is_authenticated or not current_user.is_admin:
         flash('Acceso restringido. Se requieren privilegios de administrador.')
         return redirect(url_for('main.index'))

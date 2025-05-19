@@ -8,11 +8,11 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://admin:ppp2025@localhost/sistemallamadas'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Pushover configuration
+    # Configuración de Pushover
     PUSHOVER_API_TOKEN = 'a5rzbhbgyms8aggkz4m99wddfepugf'
     PUSHOVER_USER_KEY = 'uhnir2p968ypnrgzf9ncupvhiet9pj'
     
-    # Email configuration
+    # Configuración de correo electrónico
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None

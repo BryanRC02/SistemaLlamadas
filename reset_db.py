@@ -5,11 +5,11 @@ app = create_app()
 
 def reset_db():
     with app.app_context():
-        # Drop all tables
+        # Eliminar todas las tablas
         db.drop_all()
         print("Tablas eliminadas correctamente.")
         
-        # Create tables again
+        # Crear las tablas nuevamente
         db.create_all()
         print("Tablas creadas correctamente.")
         

@@ -14,10 +14,10 @@ def send_pushover_notification(message, title, url=None, url_title=None):
         'user': current_app.config['PUSHOVER_USER_KEY'],
         'message': message,
         'title': title,
-        'priority': 2,  # Emergency priority
-        'retry': 30,    # Retry every 30 seconds
-        'expire': 180,  # Expire after 3 minutes
-        'sound': 'siren' # Use siren sound
+        'priority': 2,
+        'retry': 30,
+        'expire': 180,
+        'sound': 'siren'
     }
     
     if url:
@@ -30,13 +30,12 @@ def send_pushover_notification(message, title, url=None, url_title=None):
 
 # Function to control the relay (turn on/off the light)
 def control_relay(room, bed, action):
-    """Control the relay for a specific room and bed"""
-    # In a real system, we would have a mapping of room/bed to relay IP
-    # For this demo, we'll use a convention: 172.17.2.{room_number}
+    """Controla el rele de una habitación y cama específica"""
+
     room_number = int(room)
     relay_ip = f"172.17.2.{room_number}"
     
-    # Construct the URL to control the relay
+    # Construir la URL para controlar el rele
     url = f"http://{relay_ip}/relay/0?turn={action}"
     
     try:
@@ -48,13 +47,13 @@ def control_relay(room, bed, action):
 
 @api_bp.route('/llamada/<room>/<bed>', methods=['GET'])
 def call(room, bed):
-    """Handle call from a patient"""
-    # Create a new call record
+    """Manejar la llamada de un paciente"""
+    # Crear un nuevo registro de llamada
     new_call = Call(room=room, bed=bed, status='pending')
     db.session.add(new_call)
     db.session.commit()
     
-    # Send notification to assistants
+    # Enviar notificación a los asistentes
     base_url = request.host_url.rstrip('/')
     call_url = f"{base_url}/atender/{new_call.id}"
     
@@ -68,52 +67,52 @@ def call(room, bed):
 
 @api_bp.route('/presencia/<room>/<bed>', methods=['GET'])
 def presence(room, bed):
-    """Handle presence button press in a room"""
-    # Find the active call for this room and bed
+    """Manejar la presencia de un asistente en una habitación y cama específica"""
+    # Encontrar la llamada activa para esta habitación y cama
     call = Call.query.filter_by(room=room, bed=bed, status='attending').first()
     
     if call:
-        # Update the call record
+        # Actualizar el registro de la llamada indicando que el asistente está presente y la fecha y hora de la presencia
         call.presence_time = datetime.utcnow()
         call.status = 'completed'
         db.session.commit()
         
-        # Turn off the light
+        # Apagar el piloto
         control_relay(room, bed, 'off')
         
-        return jsonify({'status': 'success', 'message': 'Presence registered'})
+        return jsonify({'status': 'success', 'message': 'Presencia registrada'})
     else:
-        return jsonify({'status': 'error', 'message': 'No active call found for this room and bed'})
+        return jsonify({'status': 'error', 'message': 'No se encontró una llamada activa para esta habitación y cama'})
 
 @api_bp.route('/atender/<int:call_id>', methods=['GET'])
 def attend_call(call_id):
-    """Handle assistant attending a call"""
-    # Get assistant code from cookie
+    """Manejar la atención de una llamada por parte de un asistente"""
+    # Obtener el código del asistente desde la cookie
     assistant_code = request.cookies.get('asistente')
     if not assistant_code:
-        return jsonify({'status': 'error', 'message': 'No assistant enrolled'})
+        return jsonify({'status': 'error', 'message': 'No se ha enrolado un asistente'})
     
-    # Find the assistant
+    # Encontrar el asistente en la base de datos
     assistant = Assistant.query.filter_by(code=assistant_code, active=True).first()
     if not assistant:
-        return jsonify({'status': 'error', 'message': 'Invalid assistant code'})
+        return jsonify({'status': 'error', 'message': 'Código de asistente inválido'})
     
-    # Find the call
+    # Encontrar la llamada en la base de datos
     call = Call.query.get(call_id)
     if not call:
-        return jsonify({'status': 'error', 'message': 'Call not found'})
+        return jsonify({'status': 'error', 'message': 'Llamada no encontrada'})
     
-    # Check if call is already being attended
+    # Comprobar si la llamada ya está siendo atendida por otro asistente
     if call.status == 'attending':
-        return jsonify({'status': 'error', 'message': 'Call is already being attended by another assistant'})
+        return jsonify({'status': 'error', 'message': 'La llamada ya está siendo atendida por otro asistente'})
     
-    # Update the call record
+    # Actualizar el registro de la llamada indicando que el asistente está atendiendo la llamada y la fecha y hora de la atención
     call.assistant_id = assistant.id
     call.attention_time = datetime.utcnow()
     call.status = 'attending'
     db.session.commit()
     
-    # Turn on the light
+    # Encender el piloto
     control_relay(call.room, call.bed, 'on')
     
-    return jsonify({'status': 'success', 'message': 'Call is now being attended'}) 
+    return jsonify({'status': 'success', 'message': 'La llamada está siendo atendida'}) 

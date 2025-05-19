@@ -17,7 +17,7 @@ def index():
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Get calls from the last 24 hours
+    # Obtener las llamadas pendientes, en atención y completadas en las últimas 24 horas
     since = datetime.utcnow() - timedelta(hours=24)
     pending_calls = Call.query.filter(Call.call_time >= since, Call.status == 'pending').all()
     attending_calls = Call.query.filter(Call.call_time >= since, Call.status == 'attending').all()
@@ -31,7 +31,7 @@ def dashboard():
 @main_bp.route('/asistencias')
 @login_required
 def asistencias():
-    # Get calls from the last 24 hours
+    # Obtener las llamadas de las últimas 24 horas ordenadas por fecha y hora de llamada
     since = datetime.utcnow() - timedelta(hours=24)
     calls = Call.query.filter(Call.call_time >= since).order_by(Call.call_time.desc()).all()
     
@@ -45,7 +45,7 @@ def enroll():
         
         if assistant:
             resp = make_response(redirect(url_for('main.dashboard')))
-            resp.set_cookie('asistente', code, max_age=12*60*60)  # Cookie valid for 12 hours (one shift)
+            resp.set_cookie('asistente', code, max_age=12*60*60)  # Cookie válida para 12 horas
             flash(f'Enrolamiento exitoso. Bienvenido {assistant.name}')
             return resp
         else:
@@ -63,18 +63,18 @@ def desenroll():
 @main_bp.route('/export_csv')
 @login_required
 def export_csv():
-    # Get calls from the last 24 hours
+    # Obtener las llamadas de las últimas 24 horas
     since = datetime.utcnow() - timedelta(hours=24)
     calls = Call.query.filter(Call.call_time >= since).all()
     
     output = io.StringIO()
     writer = csv.writer(output)
     
-    # Write header
+    # Escribir la cabecera
     writer.writerow(['ID', 'Habitación', 'Cama', 'Hora de Llamada', 'Hora de Atención', 
                     'Hora de Presencia', 'Estado', 'Asistente'])
     
-    # Write data
+    # Escribir los datos
     for call in calls:
         assistant_name = call.attending_assistant.name if call.attending_assistant else ''
         writer.writerow([
@@ -98,7 +98,7 @@ def export_csv():
 
 @main_bp.route('/simulacion')
 def simulacion():
-    # Get the assistant code from cookie if available
+    # Obtener el código del asistente desde la cookie si está disponible
     assistant_code = request.cookies.get('asistente')
     is_assistant = False
     assistant = None
@@ -107,10 +107,10 @@ def simulacion():
         assistant = Assistant.query.filter_by(code=assistant_code, active=True).first()
         is_assistant = assistant is not None
     
-    # Get active calls for visualization
+    # Obtener las llamadas activas para la visualización
     active_calls = Call.query.filter(Call.status.in_(['pending', 'attending'])).all()
     
-    # Create a map of active calls for easy lookup
+    # Crear un mapa de llamadas activas para facilitar la búsqueda
     call_map = {}
     for call in active_calls:
         key = f"{call.room}_{call.bed}"

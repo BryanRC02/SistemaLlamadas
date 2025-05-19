@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.urls import url_parse
 from app import db
@@ -39,7 +39,20 @@ def login():
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    # Verificar si el usuario es asistente para desenrolarlo
+    is_assistant = current_user.is_assistant
+    
+    # Cerrar sesión del usuario
     logout_user()
+    
+    # Si era asistente, desenrolarlo del dispositivo
+    if is_assistant:
+        resp = make_response(redirect(url_for('auth.login')))
+        # Asegurarse de eliminar la cookie correctamente
+        resp.delete_cookie('asistente', path='/')
+        flash('Sesión cerrada y desenrolamiento exitoso')
+        return resp
+    
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/register', methods=['GET', 'POST'])

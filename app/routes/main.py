@@ -56,7 +56,7 @@ def enroll():
 @main_bp.route('/desenroll')
 def desenroll():
     resp = make_response(redirect(url_for('main.enroll')))
-    resp.delete_cookie('asistente')
+    resp.delete_cookie('asistente', path='/')
     flash('Desenrolamiento exitoso')
     return resp
 
@@ -104,8 +104,18 @@ def simulacion():
     assistant = None
     
     if assistant_code:
+        # Verificar que el código existe y corresponde a un asistente activo
         assistant = Assistant.query.filter_by(code=assistant_code, active=True).first()
-        is_assistant = assistant is not None
+        if assistant:
+            is_assistant = True
+        else:
+            # Si el código no es válido, eliminamos la cookie
+            resp = make_response(render_template('simulacion.html', 
+                                is_assistant=False,
+                                assistant=None,
+                                call_map={}))
+            resp.delete_cookie('asistente')
+            return resp
     
     # Obtener las llamadas activas para la visualización
     active_calls = Call.query.filter(Call.status.in_(['pending', 'attending'])).all()

@@ -5,12 +5,12 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-very-secret'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://admin:ppp2025@localhost/sistemallamadas'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://admin:ppp2025@localhost/sistemallamadas'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Pushover configuration
-    PUSHOVER_API_TOKEN = os.environ.get('PUSHOVER_API_TOKEN') or 'your_api_token'
-    PUSHOVER_USER_KEY = os.environ.get('PUSHOVER_USER_KEY') or 'your_user_key'
+    PUSHOVER_API_TOKEN = 'a5rzbhbgyms8aggkz4m99wddfepugf'
+    PUSHOVER_USER_KEY = 'uhnir2p968ypnrgzf9ncupvhiet9pj'
     
     # Email configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'

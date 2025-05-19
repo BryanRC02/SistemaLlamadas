@@ -6,9 +6,9 @@ from app.models.models import Call, Assistant
 
 api_bp = Blueprint('api', __name__)
 
-# Function to send Pushover notification
+# Función para enviar la notificación via Pushover
 def send_pushover_notification(message, title, url=None, url_title=None):
-    """Send notification via Pushover API"""
+    """Enviar notificación via Pushover API"""
     payload = {
         'token': current_app.config['PUSHOVER_API_TOKEN'],
         'user': current_app.config['PUSHOVER_USER_KEY'],
@@ -28,7 +28,7 @@ def send_pushover_notification(message, title, url=None, url_title=None):
     response = requests.post('https://api.pushover.net/1/messages.json', data=payload)
     return response.json()
 
-# Function to control the relay (turn on/off the light)
+# Función para controlar el rele (encender/apagar la luz)
 def control_relay(room, bed, action):
     """Controla el rele de una habitación y cama específica"""
 
@@ -42,7 +42,7 @@ def control_relay(room, bed, action):
         response = requests.get(url, timeout=5)
         return response.status_code == 200
     except Exception as e:
-        print(f"Error controlling relay: {e}")
+        print(f"Error al controlar el rele: {e}")
         return False
 
 @api_bp.route('/llamada/<room>/<bed>', methods=['GET'])

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Asistentes - Sistema de Llamadas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Gestión de Asistentes</h2>
+            <a href="{{ url_for('admin.new_assistant') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Asistente
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Asistentes Registrados ({{ assistants|length }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Código</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assistant in assistants %}
+                            <tr>
+                                <td>{{ assistant.id }}</td>
+                                <td>{{ assistant.name }}</td>
+                                <td><code>{{ assistant.code }}</code></td>
+                                <td>
+                                    {% if assistant.active %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.edit_assistant', id=assistant.id) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a href="{{ url_for('admin.delete_assistant', id=assistant.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de que desea eliminar este asistente?')">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if not assistants %}
+                <p class="text-center mb-0">No hay asistentes registrados.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+{% endblock %} 

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Llamadas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Panel de Control</h2>
+        <p>Bienvenido al sistema de llamadas paciente-enfermero. Aquí puede ver las llamadas de las últimas 24 horas.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-danger mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Llamadas Pendientes ({{ pending_calls|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_calls %}
+                <ul class="list-group">
+                    {% for call in pending_calls %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Habitación {{ call.room }} - Cama {{ call.bed }}</strong>
+                            <br>
+                            <small class="text-muted">{{ call.call_time.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-center mb-0">No hay llamadas pendientes.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-warning mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Llamadas en Atención ({{ attending_calls|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if attending_calls %}
+                <ul class="list-group">
+                    {% for call in attending_calls %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Habitación {{ call.room }} - Cama {{ call.bed }}</strong>
+                            <br>
+                            <small class="text-muted">Llamada: {{ call.call_time.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                            <br>
+                            <small class="text-muted">Atención: {{ call.attention_time.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                            <br>
+                            <small class="text-muted">Asistente: {{ call.attending_assistant.name if call.attending_assistant else 'No asignado' }}</small>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-center mb-0">No hay llamadas en atención.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Llamadas Completadas ({{ completed_calls|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if completed_calls %}
+                <ul class="list-group">
+                    {% for call in completed_calls %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Habitación {{ call.room }} - Cama {{ call.bed }}</strong>
+                            <br>
+                            <small class="text-muted">Llamada: {{ call.call_time.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                            <br>
+                            <small class="text-muted">Atención: {{ call.attention_time.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                            <br>
+                            <small class="text-muted">Presencia: {{ call.presence_time.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                            <br>
+                            <small class="text-muted">Asistente: {{ call.attending_assistant.name if call.attending_assistant else 'No asignado' }}</small>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-center mb-0">No hay llamadas completadas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-end">
+            <a href="{{ url_for('main.export_csv') }}" class="btn btn-success me-2">
+                <i class="bi bi-file-earmark-excel"></i> Exportar CSV
+            </a>
+            <a href="#" class="btn btn-primary">
+                <i class="bi bi-envelope"></i> Enviar por Email
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+{% endblock %} 

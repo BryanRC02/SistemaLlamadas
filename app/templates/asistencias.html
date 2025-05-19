@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencias - Sistema de Llamadas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Histórico de Asistencias</h2>
+        <p>Listado de llamadas de las últimas 24 horas.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Llamadas ({{ calls|length }})</h5>
+                    <div>
+                        <a href="{{ url_for('main.export_csv') }}" class="btn btn-sm btn-light">
+                            <i class="bi bi-file-earmark-excel"></i> Exportar CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Habitación</th>
+                                <th>Cama</th>
+                                <th>Hora de Llamada</th>
+                                <th>Hora de Atención</th>
+                                <th>Hora de Presencia</th>
+                                <th>Estado</th>
+                                <th>Asistente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for call in calls %}
+                            <tr class="
+                                {% if call.status == 'pending' %}table-danger{% endif %}
+                                {% if call.status == 'attending' %}table-warning{% endif %}
+                                {% if call.status == 'completed' %}table-success{% endif %}
+                            ">
+                                <td>{{ call.id }}</td>
+                                <td>{{ call.room }}</td>
+                                <td>{{ call.bed }}</td>
+                                <td>{{ call.call_time.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                                <td>{{ call.attention_time.strftime('%d/%m/%Y %H:%M:%S') if call.attention_time else '-' }}</td>
+                                <td>{{ call.presence_time.strftime('%d/%m/%Y %H:%M:%S') if call.presence_time else '-' }}</td>
+                                <td>
+                                    {% if call.status == 'pending' %}
+                                    <span class="badge bg-danger">Pendiente</span>
+                                    {% elif call.status == 'attending' %}
+                                    <span class="badge bg-warning text-dark">En Atención</span>
+                                    {% elif call.status == 'completed' %}
+                                    <span class="badge bg-success">Completada</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ call.attending_assistant.name if call.attending_assistant else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if not calls %}
+                <p class="text-center mb-0">No hay llamadas registradas en las últimas 24 horas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+{% endblock %} 

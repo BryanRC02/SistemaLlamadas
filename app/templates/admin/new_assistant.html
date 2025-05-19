@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Asistente - Sistema de Llamadas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Nuevo Asistente</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.new_assistant') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0 text-muted">El código de asistente se generará automáticamente.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

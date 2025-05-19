@@ -1,0 +1,14 @@
+[Unit]
+Description=Sistema de Llamadas Paciente-Enfermero
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/SistemaLlamadas
+Environment="PATH=/path/to/SistemaLlamadas/venv/bin"
+ExecStart=/path/to/SistemaLlamadas/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target 

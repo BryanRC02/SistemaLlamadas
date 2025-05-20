@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Relé - Sistema de Llamadas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Nuevo Relé</h2>
+            <a href="{{ url_for('relays.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver a la lista
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Configurar Nuevo Relé</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('relays.new_relay') }}">
+                    <div class="mb-3">
+                        <label for="room" class="form-label">Habitación</label>
+                        <input type="text" class="form-control" id="room" name="room" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bed" class="form-label">Cama</label>
+                        <input type="text" class="form-control" id="bed" name="bed" required maxlength="1">
+                        <small class="form-text text-muted">Un solo carácter (A, B, C, etc.)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">Dirección IP</label>
+                        <input type="text" class="form-control" id="ip_address" name="ip_address" required placeholder="192.168.1.100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="endpoint" class="form-label">Endpoint</label>
+                        <input type="text" class="form-control" id="endpoint" name="endpoint" value="/relay/0" placeholder="/relay/0">
+                        <small class="form-text text-muted">Ruta para controlar el relé (por defecto: /relay/0)</small>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                        <label class="form-check-label" for="active">Activo</label>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+{% endblock %} 

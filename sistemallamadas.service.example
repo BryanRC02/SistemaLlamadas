@@ -1,15 +1,25 @@
 [Unit]
 Description=Sistema de Llamadas Paciente-Enfermero
 After=network.target mariadb.service
+Requires=mariadb.service
 
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/path/to/SistemaLlamadas
-Environment="PATH=/path/to/SistemaLlamadas/venv/bin"
-ExecStart=/path/to/SistemaLlamadas/venv/bin/gunicorn --workers 4 --timeout 60 --access-logfile /var/log/sistemallamadas/access.log --error-logfile /var/log/sistemallamadas/error.log --bind 127.0.0.1:5000 "app:create_app()"
+WorkingDirectory=/opt/SistemaLlamadas
+Environment="PATH=/opt/SistemaLlamadas/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/opt/SistemaLlamadas/venv/bin/gunicorn --workers 4 --timeout 60 --access-logfile /var/log/sistemallamadas/access.log --error-logfile /var/log/sistemallamadas/error.log --bind 127.0.0.1:5000 "app:create_app()"
+
+# Configurar reinicio en caso de fallos
 Restart=always
 RestartSec=5
+StartLimitInterval=0
+
+# Seguridad
+PrivateTmp=true
+ProtectHome=true
+NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target 

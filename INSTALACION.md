@@ -10,6 +10,15 @@ Este documento proporciona las instrucciones paso a paso para instalar y configu
 4. Nginx
 5. Supervisor (opcional, para gestión de procesos)
 
+## Configuración de Red
+
+**Importante**: El sistema está configurado para usar las siguientes direcciones IP:
+
+- Servidor de aplicaciones: **172.17.0.10** (donde corre nginx y Flask)
+- Relés WiFi: **172.17.2.XXX** (donde XXX es el número de habitación)
+
+Asegúrese de que su servidor tenga asignada la IP 172.17.0.10 o modifique los archivos de configuración según sea necesario.
+
 ## Instalación de Dependencias
 
 ```bash
@@ -19,9 +28,11 @@ sudo apt update && sudo apt upgrade -y
 # Instalar dependencias
 sudo apt install -y python3 python3-pip python3-venv mariadb-server nginx supervisor
 
-# Iniciar y habilitar MariaDB
+# Iniciar y habilitar servicios
 sudo systemctl start mariadb
 sudo systemctl enable mariadb
+sudo systemctl start nginx
+sudo systemctl enable nginx
 
 # Configurar MariaDB (siga los pasos en pantalla)
 sudo mysql_secure_installation
@@ -44,6 +55,10 @@ EXIT;
 ## Instalación del Sistema
 
 ```bash
+# Crear directorio de la aplicación
+sudo mkdir -p /opt/SistemaLlamadas
+sudo chown $USER:$USER /opt/SistemaLlamadas
+
 # Clonar repositorio o copiar archivos
 git clone <URL_REPOSITORIO> /opt/SistemaLlamadas
 cd /opt/SistemaLlamadas
@@ -59,19 +74,33 @@ pip install -r requirements.txt
 python init_db.py
 ```
 
+## Configuración de Directorios
+
+```bash
+# Crear directorio de logs
+sudo mkdir -p /var/log/sistemallamadas
+sudo chown www-data:www-data /var/log/sistemallamadas
+
+# Asignar permisos correctos a la aplicación
+sudo chown -R www-data:www-data /opt/SistemaLlamadas
+sudo chmod -R 755 /opt/SistemaLlamadas
+```
+
 ## Configuración del Servicio
 
 1. Copiar archivo de servicio:
 
 ```bash
-sudo cp sistemallamadas.service.example /etc/systemd/system/sistemallamadas.service
+sudo cp /opt/SistemaLlamadas/sistemallamadas.service.example /etc/systemd/system/sistemallamadas.service
 ```
 
-2. Editar el archivo y modificar las rutas según sea necesario:
+2. Verificar que las rutas en el archivo de servicio sean correctas:
 
 ```bash
 sudo nano /etc/systemd/system/sistemallamadas.service
 ```
+
+Asegúrese de que todas las rutas apunten a `/opt/SistemaLlamadas` y el usuario sea `www-data`.
 
 3. Habilitar e iniciar el servicio:
 
@@ -86,42 +115,49 @@ sudo systemctl start sistemallamadas
 1. Copiar archivo de configuración:
 
 ```bash
-sudo cp nginx.conf.example /etc/nginx/sites-available/sistemallamadas
+sudo cp /opt/SistemaLlamadas/nginx.conf.example /etc/nginx/sites-available/sistemallamadas
 ```
 
-2. Editar y ajustar según necesidades:
+2. Verificar que la configuración sea correcta:
 
 ```bash
 sudo nano /etc/nginx/sites-available/sistemallamadas
 ```
 
-3. Activar configuración:
+Asegúrese de que `server_name` esté configurado como `172.17.0.10` y que las rutas estáticas apunten a `/opt/SistemaLlamadas/app/static`.
+
+3. Crear archivo de autenticación básica para áreas protegidas:
+
+```bash
+sudo apt install apache2-utils  # Para instalar htpasswd
+sudo mkdir -p /etc/nginx
+sudo htpasswd -c /etc/nginx/.htpasswd admin  # Crear usuario 'admin'
+```
+
+4. Activar configuración:
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/sistemallamadas /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default  # Opcional: eliminar configuración por defecto
+sudo rm -f /etc/nginx/sites-enabled/default  # Eliminar configuración por defecto
 ```
 
-4. Verificar y reiniciar:
+5. Verificar y reiniciar:
 
 ```bash
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## Creación de Directorios de Log
-
-```bash
-# Crear directorio de logs
-sudo mkdir -p /var/log/sistemallamadas
-sudo chown www-data:www-data /var/log/sistemallamadas
-```
-
 ## Configuración de Pushover
 
-Para recibir notificaciones, regístrese en [Pushover](https://pushover.net/) y actualice los valores de token y clave de usuario en el archivo `config.py`.
+Para recibir notificaciones, regístrese en [Pushover](https://pushover.net/) y actualice los valores de token y clave de usuario en el archivo `config.py`:
 
-## Verificación de la Instalación
+```bash
+# Editar archivo de configuración
+sudo nano /opt/SistemaLlamadas/config.py
+```
+
+## Prueba del Sistema
 
 1. Comprobar estado del servicio:
 
@@ -136,27 +172,41 @@ tail -f /var/log/sistemallamadas/error.log
 ```
 
 3. Acceder a la aplicación web:
-   - http://IP_DEL_SERVIDOR/
-   - http://IP_DEL_SERVIDOR/admin (para administradores)
+   - http://172.17.0.10/ (interfaz principal)
+   - http://172.17.0.10/admin (para administradores)
 
-## Configuración de Red
+## Prueba de Pulsadores y Relés
 
-Asegúrese de configurar correctamente la red para que:
+Para probar la funcionalidad sin hardware real, use los endpoints de prueba:
 
-1. Los pulsadores WiFi puedan acceder al servidor en el puerto 80 (http)
-2. El servidor pueda acceder a los relés WiFi en sus respectivas direcciones IP
-3. Si es necesario, configure direcciones IP estáticas para los dispositivos
+```bash
+# Simular una llamada de la habitación 104, cama b
+curl http://172.17.0.10/test/simulate/llamada/104/b
+
+# Simular presencia en habitación 104, cama b
+curl http://172.17.0.10/test/simulate/presencia/104/b
+
+# Probar control directo de un relé (encender)
+curl http://172.17.0.10/test/relay/104/on
+
+# Probar control directo de un relé (apagar)
+curl http://172.17.0.10/test/relay/104/off
+```
 
 ## Configuración de Pulsadores y Relés
 
 ### Pulsadores WiFi
 Configurar para enviar peticiones HTTP GET a:
-- Llamada: `http://IP_SERVIDOR/llamada/<habitación>/<cama>`
-- Presencia: `http://IP_SERVIDOR/presencia/<habitación>/<cama>`
+- Llamada: `http://172.17.0.10/llamada/<habitación>/<cama>`
+- Presencia: `http://172.17.0.10/presencia/<habitación>/<cama>`
 
 ### Relés WiFi
 Configurar con dirección IP estática en el formato:
 - `172.17.2.<número_habitación>`
+
+Deben responder a:
+- `http://172.17.2.<número_habitación>/relay/0?turn=on` (encender)
+- `http://172.17.2.<número_habitación>/relay/0?turn=off` (apagar)
 
 ## Mantenimiento
 
@@ -174,5 +224,50 @@ sudo systemctl restart sistemallamadas
 
 ```bash
 # Backup de base de datos
-mysqldump -u admin -p sistemallamadas > backup_$(date +%Y%m%d).sql
-``` 
+mysqldump -u admin -p sistemallamadas > /opt/backups/backup_$(date +%Y%m%d).sql
+```
+
+3. Rotación de logs:
+
+```bash
+# Crear archivo de configuración para logrotate
+sudo nano /etc/logrotate.d/sistemallamadas
+```
+
+Contenido:
+```
+/var/log/sistemallamadas/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0640 www-data www-data
+    sharedscripts
+    postrotate
+        systemctl reload sistemallamadas
+    endscript
+}
+```
+
+## Solución de Problemas
+
+### Problemas Comunes
+
+1. **No se puede acceder a la aplicación web**:
+   - Verificar estado de nginx: `sudo systemctl status nginx`
+   - Verificar logs de nginx: `sudo tail -f /var/log/nginx/error.log`
+   - Comprobar firewall: `sudo ufw status`
+
+2. **No se encienden/apagan los pilotos**:
+   - Verificar conectividad a los relés: `ping 172.17.2.XXX`
+   - Revisar logs de aplicación: `tail -f /var/log/sistemallamadas/error.log`
+
+3. **Errores en la base de datos**:
+   - Verificar estado de MariaDB: `sudo systemctl status mariadb`
+   - Revisar conexión: `mysql -u admin -p -e "USE sistemallamadas; SHOW TABLES;"`
+
+4. **Problemas con Pushover**:
+   - Verificar token y clave de usuario en `config.py`
+   - Comprobar conexión a Internet: `ping api.pushover.net`

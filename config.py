@@ -13,12 +13,12 @@ class Config:
     PUSHOVER_USER_KEY = 'uhnir2p968ypnrgzf9ncupvhiet9pj'
     
     # Configuración de correo electrónico
-    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or 'noreply@sistemallamadas.com'
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = 'bryanramoscruz@gmail.com'
+    MAIL_PASSWORD = 'cqqx zdpp drld shfm'
+    MAIL_DEFAULT_SENDER = 'bryanramoscruz@gmail.com'
     
     # Configuración de sistema de relés
     SERVER_IP = '172.17.0.10'  # IP del servidor para recibir llamadas

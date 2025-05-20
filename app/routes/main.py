@@ -7,6 +7,7 @@ import requests
 from app import db
 from app.models.models import Call, Assistant, Relay
 from app.routes.api import control_relay
+from app.utils import send_email, generate_calls_csv
 
 main_bp = Blueprint('main', __name__)
 
@@ -108,38 +109,66 @@ def desenroll():
 @main_bp.route('/export_csv')
 @login_required
 def export_csv():
-    # Obtener las llamadas de las últimas 24 horas
-    since = datetime.utcnow() - timedelta(hours=24)
-    calls = Call.query.filter(Call.call_time >= since).all()
+    """Descargar los registros de llamadas en formato CSV"""
+    csv_data, filename = generate_calls_csv()
     
-    output = io.StringIO()
-    writer = csv.writer(output)
-    
-    # Escribir la cabecera
-    writer.writerow(['ID', 'Habitación', 'Cama', 'Hora de Llamada', 'Hora de Atención', 
-                    'Hora de Presencia', 'Estado', 'Asistente'])
-    
-    # Escribir los datos
-    for call in calls:
-        assistant_name = call.attending_assistant.name if call.attending_assistant else ''
-        writer.writerow([
-            call.id, 
-            call.room, 
-            call.bed, 
-            call.call_time, 
-            call.attention_time, 
-            call.presence_time, 
-            call.status, 
-            assistant_name
-        ])
-    
-    output.seek(0)
     return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8')),
+        io.BytesIO(csv_data.encode('utf-8')),
         mimetype='text/csv',
         as_attachment=True,
-        attachment_filename=f'llamadas_{datetime.utcnow().strftime("%Y%m%d")}.csv'
+        attachment_filename=filename
     )
+
+@main_bp.route('/send_email_csv', methods=['GET', 'POST'])
+@login_required
+def send_email_csv():
+    """Enviar los registros de llamadas por correo electrónico en formato CSV"""
+    if request.method == 'POST':
+        recipient = request.form.get('recipient')
+        if not recipient:
+            flash('El correo electrónico del destinatario es obligatorio')
+            return redirect(url_for('main.send_email_csv'))
+        
+        # Generar el archivo CSV
+        csv_data, filename = generate_calls_csv()
+        
+        # Crear el cuerpo del correo
+        fecha_actual = datetime.utcnow().strftime('%d/%m/%Y')
+        subject = f"Registros de Llamadas - {fecha_actual}"
+        
+        text_body = f"""
+        Registros de Llamadas del Sistema - {fecha_actual}
+        
+        Se adjunta el archivo CSV con los registros de las llamadas de las últimas 24 horas.
+        
+        Este es un correo automático, por favor no responda a este mensaje.
+        """
+        
+        html_body = f"""
+        <h2>Registros de Llamadas del Sistema - {fecha_actual}</h2>
+        <p>Se adjunta el archivo CSV con los registros de las llamadas de las últimas 24 horas.</p>
+        <p>Este es un correo automático, por favor no responda a este mensaje.</p>
+        """
+        
+        # Crear el archivo adjunto
+        attachment = (filename, 'text/csv', csv_data.encode('utf-8'))
+        
+        try:
+            send_email(
+                subject=subject,
+                sender=None,
+                recipients=[recipient],
+                text_body=text_body,
+                html_body=html_body,
+                attachments=[attachment]
+            )
+            flash('Correo enviado con éxito. Verifique su bandeja de entrada.')
+        except Exception as e:
+            flash(f'Error al enviar el correo: {str(e)}')
+        
+        return redirect(url_for('main.dashboard'))
+    
+    return render_template('send_email_csv.html')
 
 @main_bp.route('/simulacion')
 def simulacion():

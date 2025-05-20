@@ -24,7 +24,7 @@ def dashboard():
     
     return render_template('dashboard.html', 
                           pending_calls=pending_calls, 
-                          attending_calls=attending_calls, 
+                          attending_calls=attending_calls,
                           completed_calls=completed_calls)
 
 @main_bp.route('/asistencias')

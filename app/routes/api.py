@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, current_app
 import requests
 from app import db
 from app.models.models import Call, Assistant
+from sqlalchemy import or_
 
 api_bp = Blueprint('api', __name__)
 
@@ -30,24 +31,49 @@ def send_pushover_notification(message, title, url=None, url_title=None):
 
 # Función para controlar el rele (encender/apagar la luz)
 def control_relay(room, bed, action):
-    """Controla el rele de una habitación y cama específica"""
-
-    room_number = int(room)
-    relay_ip = f"172.17.2.{room_number}"
+    """Controla el rele de una habitación y cama específica
     
-    # Construir la URL para controlar el rele
-    url = f"http://{relay_ip}/relay/0?turn={action}"
+    Args:
+        room: Número de habitación
+        bed: Identificador de la cama (a o b)
+        action: Acción a realizar (on o off)
+        
+    Returns:
+        Boolean indicando si la operación fue exitosa
+    """
+    room_number = int(room)
+    relay_base_ip = current_app.config['RELAY_BASE_IP']
+    relay_endpoint = current_app.config['RELAY_ENDPOINT']
+    
+    # Construir la dirección IP del relé para la habitación
+    relay_ip = f"{relay_base_ip}.{room_number}"
+    
+    # Construir la URL para controlar el relé
+    # Formato: http://172.17.2.104/relay/0?turn=on
+    url = f"http://{relay_ip}{relay_endpoint}?turn={action}"
     
     try:
         response = requests.get(url, timeout=5)
+        print(f"Control relay: {url}, Response: {response.status_code}")
         return response.status_code == 200
     except Exception as e:
-        print(f"Error al controlar el rele: {e}")
+        print(f"Error al controlar el relé: {e}")
         return False
 
 @api_bp.route('/llamada/<room>/<bed>', methods=['GET'])
 def call(room, bed):
-    """Manejar la llamada de un paciente"""
+    """Manejar la llamada de un paciente
+    
+    URL ejemplo: http://172.17.0.10/llamada/104/b
+    """
+    # Verificar si ya existe una llamada pendiente o en atención para esta habitación y cama
+    existing_call = Call.query.filter_by(room=room, bed=bed).filter(
+        or_(Call.status == 'pending', Call.status == 'attending')
+    ).first()
+    
+    if existing_call:
+        return jsonify({'status': 'info', 'message': 'Ya existe una llamada para esta habitación y cama'})
+    
     # Crear un nuevo registro de llamada
     new_call = Call(room=room, bed=bed, status='pending')
     db.session.add(new_call)
@@ -67,7 +93,10 @@ def call(room, bed):
 
 @api_bp.route('/presencia/<room>/<bed>', methods=['GET'])
 def presence(room, bed):
-    """Manejar la presencia de un asistente en una habitación y cama específica"""
+    """Manejar la presencia de un asistente en una habitación y cama específica
+    
+    URL ejemplo: http://172.17.0.10/presencia/104/b
+    """
     # Encontrar la llamada activa para esta habitación y cama
     call = Call.query.filter_by(room=room, bed=bed, status='attending').first()
     
@@ -77,10 +106,14 @@ def presence(room, bed):
         call.status = 'completed'
         db.session.commit()
         
-        # Apagar el piloto
-        control_relay(room, bed, 'off')
+        # Apagar el piloto luminoso
+        success = control_relay(room, bed, 'off')
         
-        return jsonify({'status': 'success', 'message': 'Presencia registrada'})
+        return jsonify({
+            'status': 'success', 
+            'message': 'Presencia registrada', 
+            'relay_success': success
+        })
     else:
         return jsonify({'status': 'error', 'message': 'No se encontró una llamada activa para esta habitación y cama'})
 
@@ -112,7 +145,60 @@ def attend_call(call_id):
     call.status = 'attending'
     db.session.commit()
     
-    # Encender el piloto
-    control_relay(call.room, call.bed, 'on')
+    # Encender el piloto luminoso de la habitación correspondiente
+    success = control_relay(call.room, call.bed, 'on')
     
-    return jsonify({'status': 'success', 'message': 'La llamada está siendo atendida'}) 
+    return jsonify({
+        'status': 'success', 
+        'message': 'Asistencia confirmada',
+        'relay_success': success
+    })
+
+# Rutas para simular el comportamiento de los pulsadores y relés (solo para pruebas)
+@api_bp.route('/test/simulate/llamada/<room>/<bed>', methods=['GET'])
+def simulate_call(room, bed):
+    """Simula la pulsación del botón de llamada"""
+    server_ip = current_app.config['SERVER_IP']
+    url = f"http://{server_ip}/llamada/{room}/{bed}"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        return jsonify({
+            'status': 'success',
+            'simulation': 'call_button',
+            'response': response.json()
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@api_bp.route('/test/simulate/presencia/<room>/<bed>', methods=['GET'])
+def simulate_presence(room, bed):
+    """Simula la pulsación del botón de presencia"""
+    server_ip = current_app.config['SERVER_IP']
+    url = f"http://{server_ip}/presencia/{room}/{bed}"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        return jsonify({
+            'status': 'success',
+            'simulation': 'presence_button',
+            'response': response.json()
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@api_bp.route('/test/relay/<room>/<action>', methods=['GET'])
+def test_relay(room, action):
+    """Endpoint de prueba para controlar directamente un relé"""
+    if action not in ['on', 'off']:
+        return jsonify({'status': 'error', 'message': 'Acción inválida. Use "on" u "off"'})
+    
+    try:
+        success = control_relay(room, 'a', action)  # Por defecto usamos la cama 'a' para pruebas
+        return jsonify({
+            'status': 'success' if success else 'error',
+            'message': f'Relé de habitación {room} {"encendido" if action == "on" else "apagado"}',
+            'success': success
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}) 

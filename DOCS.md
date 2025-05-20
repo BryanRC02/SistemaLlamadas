@@ -15,6 +15,71 @@ El sistema está compuesto por los siguientes componentes:
 4. **Dispositivos de Asistentes**:
    - Smartphones con la aplicación Pushover instalada.
 
+## Sistema de Relés
+
+El sistema incluye la capacidad de integración con relés WiFi para controlar luces indicadoras en las habitaciones de los pacientes. Cada habitación cuenta con dos pulsadores:
+
+1. **Pulsador de Llamada**: Para que el paciente solicite asistencia.
+2. **Pulsador de Presencia**: Para que el asistente confirme que está en la habitación.
+
+### Rutas HTTP para los Pulsadores
+
+- **Llamada**:
+  ```
+  GET http://[SERVER_IP]/llamada/[ROOM]/[BED]
+  ```
+  Ejemplo: `http://172.17.0.10/llamada/104/b`
+
+- **Presencia**:
+  ```
+  GET http://[SERVER_IP]/presencia/[ROOM]/[BED]
+  ```
+  Ejemplo: `http://172.17.0.10/presencia/104/b`
+
+### Control de Relés
+
+El sistema controla pilotos luminosos en cada habitación a través de relés WiFi:
+
+- **Encender Piloto**:
+  ```
+  GET http://172.17.2.[ROOM]/relay/0?turn=on
+  ```
+  Ejemplo: `http://172.17.2.104/relay/0?turn=on`
+
+- **Apagar Piloto**:
+  ```
+  GET http://172.17.2.[ROOM]/relay/0?turn=off
+  ```
+  Ejemplo: `http://172.17.2.104/relay/0?turn=off`
+
+### Flujo de Funcionamiento
+
+1. El paciente pulsa el botón de llamada, generando una solicitud HTTP al servidor.
+2. El sistema registra la llamada y envía una notificación a los asistentes.
+3. Cuando un asistente confirma la recepción de la llamada a través de la app de Pushover, el sistema enciende el piloto luminoso de la habitación.
+4. Una vez que el asistente llega a la habitación, presiona el botón de presencia, generando otra solicitud HTTP.
+5. El sistema marca la llamada como completada y apaga el piloto luminoso.
+
+### Endpoints de Prueba
+
+Para probar el sistema sin hardware real, se han implementado los siguientes endpoints:
+
+- **Simular Llamada**:
+  ```
+  GET /test/simulate/llamada/[ROOM]/[BED]
+  ```
+
+- **Simular Presencia**:
+  ```
+  GET /test/simulate/presencia/[ROOM]/[BED]
+  ```
+
+- **Probar Relé**:
+  ```
+  GET /test/relay/[ROOM]/[ACTION]
+  ```
+  Donde `[ACTION]` puede ser `on` u `off`.
+
 ## Flujo de Funcionamiento
 
 1. **Llamada del Paciente**:

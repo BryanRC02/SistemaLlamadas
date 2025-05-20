@@ -64,10 +64,10 @@
     <div class="col-md-4">
         <div class="card border-warning mb-4">
             <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0">Llamadas en Atención ({{ attending_calls|length }})</h5>
+                <h5 class="mb-0">Asistencia Confirmada ({{ attending_calls|length }})</h5>
             </div>
             <div class="card-body">
-                {% if attending_calls %}
+                {% if attending_calls|length > 0 %}
                 <div id="attendingCallsCarousel" class="carousel slide" data-bs-ride="false" data-bs-interval="false">
                     <div class="carousel-inner">
                         {% for call in attending_calls %}
@@ -102,7 +102,7 @@
                 {% else %}
                 <div class="card">
                     <div class="card-body" style="height: 200px; display: flex; align-items: center; justify-content: center;">
-                        <p class="text-center mb-0">No hay llamadas en atención.</p>
+                        <p class="text-center mb-0">No hay asistencias confirmadas.</p>
                     </div>
                     <div class="card-footer text-muted text-center">
                         0 / 0

@@ -18,7 +18,7 @@ def send_pushover_notification(message, title, url=None, url_title=None):
         'priority': 2,
         'retry': 30,
         'expire': 180,
-        'sound': 'siren'
+        'sound': 'persistent'
     }
     
     if url:

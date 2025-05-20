@@ -28,7 +28,9 @@
                                 <th>ID</th>
                                 <th>Nombre</th>
                                 <th>Código</th>
+                                <th>Usuario</th>
                                 <th>Estado</th>
+                                <th>Administrador</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -38,11 +40,19 @@
                                 <td>{{ assistant.id }}</td>
                                 <td>{{ assistant.name }}</td>
                                 <td><code>{{ assistant.code }}</code></td>
+                                <td>{{ assistant_users[assistant.id] }}</td>
                                 <td>
                                     {% if assistant.active %}
                                     <span class="badge bg-success">Activo</span>
                                     {% else %}
                                     <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if assistant_is_admin[assistant.id] %}
+                                    <span class="badge bg-success">Sí</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
                                     {% endif %}
                                 </td>
                                 <td>

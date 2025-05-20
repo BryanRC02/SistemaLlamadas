@@ -36,20 +36,23 @@ def init_db():
         
         for assistant in assistants:
             db.session.add(assistant)
-
-        # Crear los usuarios de los asistentes
-        assistants_user = [
-            User(username='Bryan Ramos', email='bryan@email.com', is_admin=True, is_assistant=True),
-            User(username='María García', email='maria@email.com', is_admin=True, is_assistant=True),
-            User(username='Carlos López', email='carlos@email.com', is_admin=False, is_assistant=True),
-            User(username='Ana Martínez', email='ana@email.com', is_admin=True, is_assistant=True),
-            User(username='Pedro Rodríguez', email='pedro@email.com', is_admin=False, is_assistant=True)
-        ]
-
-        for assistant_user in assistants_user:
+        
+        # Commit para guardar los asistentes y obtener sus IDs
+        db.session.commit()
+        
+        # Crear usuarios asociados a los asistentes
+        for assistant in assistants:
+            username = assistant.name
+            email = f"{assistant.name.lower().replace(' ', '')}@sistemallamadas.local"
+            assistant_user = User(
+                username=username, 
+                email=email, 
+                is_assistant=True, 
+                is_admin=True,
+                assistant_code=assistant.code
+            )
             assistant_user.set_password('PPP2025')
             db.session.add(assistant_user)
-
         
         # Commit para aplicar los cambios en la base de datos
         db.session.commit()
@@ -109,6 +112,8 @@ def init_db():
         print("Usuario administrador: admin / admin123")
         print("Usuario regular: user / user123")
         print("Códigos de los asistentes activos:", ", ".join([a.code for a in assistants if a.active]))
+        print("Usuarios de asistentes creados con contraseña por defecto: PPP2025")
+        print("Nombres de usuario de asistentes:", ", ".join([f"{a.name}" for a in assistants]))
 
 if __name__ == '__main__':
     init_db() 

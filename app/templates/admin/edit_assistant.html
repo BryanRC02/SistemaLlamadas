@@ -24,6 +24,16 @@
                         <input type="checkbox" class="form-check-input" id="active" name="active" {% if assistant.active %}checked{% endif %}>
                         <label class="form-check-label" for="active">Activo</label>
                     </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin" {% if assistant_user and assistant_user.is_admin %}checked{% endif %}>
+                        <label class="form-check-label" for="is_admin">Es administrador</label>
+                        <div class="form-text text-muted">Si se marca, este asistente podrá acceder al panel de gestión de asistentes.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Nueva contraseña (opcional)</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Dejar en blanco para mantener la contraseña actual">
+                        <div class="form-text text-muted">Solo rellene este campo si desea cambiar la contraseña del usuario.</div>
+                    </div>
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-primary">Guardar</button>

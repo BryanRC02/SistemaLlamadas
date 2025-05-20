@@ -15,6 +15,15 @@
                         <label for="name" class="form-label">Nombre</label>
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña (opcional)</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Dejar en blanco para usar la contraseña por defecto: PPP2025">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin">
+                        <label class="form-check-label" for="is_admin">Es administrador</label>
+                        <div class="form-text text-muted">Si se marca, este asistente podrá acceder al panel de gestión de asistentes.</div>
+                    </div>
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-primary">Guardar</button>

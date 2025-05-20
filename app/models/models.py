@@ -10,12 +10,30 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
     is_assistant = db.Column(db.Boolean, default=False)
+    assistant_code = db.Column(db.String(6), db.ForeignKey('assistant.code'), nullable=True)
+    assistant = db.relationship('Assistant', backref='user', uselist=False)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
         
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def is_active_assistant(self):
+        """Verifica si el usuario es un asistente activo"""
+        if not self.is_assistant or not self.assistant_code:
+            return True  # Si no es asistente, se considera activo
+        
+        # Buscar el estado del asistente asociado
+        assistant = Assistant.query.filter_by(code=self.assistant_code).first()
+        if assistant and assistant.active:
+            return True
+        return False
+    
+    @property
+    def is_active(self):
+        """Implementación de la propiedad de Flask-Login que verifica si el usuario está activo"""
+        return self.is_active_assistant()
     
     def __repr__(self):
         return f'<User {self.username}>'

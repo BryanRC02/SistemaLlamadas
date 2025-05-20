@@ -67,7 +67,7 @@
     </div>
     {% else %}
     <div class="alert alert-warning">
-        Estás en modo paciente. Para ver opciones de asistente, <a href="{{ url_for('main.enroll') }}">regístrate como asistente</a>.
+        Estás en modo paciente. Para ver opciones de asistente, <a href="{{ url_for('auth.login') }}">inicia sesión como asistente</a> y <a href="{{ url_for('main.enroll') }}">enrola tu dispositivo</a>.
     </div>
     {% endif %}
     

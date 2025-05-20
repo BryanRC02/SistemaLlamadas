@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.urls import url_parse
 from app import db
-from app.models.models import User
+from app.models.models import User, Assistant
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -20,6 +20,11 @@ def login():
         
         if user is None or not user.check_password(password):
             flash('Usuario o contraseña incorrectos')
+            return redirect(url_for('auth.login'))
+        
+        # Verificar si el usuario asistente está activo
+        if user.is_assistant and not user.is_active_assistant():
+            flash('Su cuenta de asistente está desactivada. Por favor, contacte al administrador.')
             return redirect(url_for('auth.login'))
         
         login_user(user, remember=remember)

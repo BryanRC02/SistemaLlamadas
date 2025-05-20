@@ -10,9 +10,8 @@ from app.models.models import Call, Assistant
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
-@login_required
 def index():
-    return redirect(url_for('main.dashboard'))
+    return redirect(url_for('main.simulacion'))
 
 @main_bp.route('/dashboard')
 @login_required
@@ -38,7 +37,18 @@ def asistencias():
     return render_template('asistencias.html', calls=calls)
 
 @main_bp.route('/enroll', methods=['GET', 'POST'])
+@login_required
 def enroll():
+    # Verificar que el usuario sea un asistente
+    if not current_user.is_assistant:
+        flash('Solo los asistentes pueden acceder a esta página')
+        return redirect(url_for('main.dashboard'))
+    
+    # Verificar que el asistente esté activo
+    if not current_user.is_active_assistant():
+        flash('Su cuenta de asistente está desactivada. Por favor, contacte al administrador.')
+        return redirect(url_for('main.dashboard'))
+        
     if request.method == 'POST':
         code = request.form.get('code')
         assistant = Assistant.query.filter_by(code=code, active=True).first()
@@ -54,8 +64,19 @@ def enroll():
     return render_template('enroll.html')
 
 @main_bp.route('/desenroll')
+@login_required
 def desenroll():
-    resp = make_response(redirect(url_for('main.enroll')))
+    # Verificar que el usuario sea un asistente
+    if not current_user.is_assistant:
+        flash('Solo los asistentes pueden acceder a esta función')
+        return redirect(url_for('main.dashboard'))
+    
+    # Verificar que el asistente esté activo
+    if not current_user.is_active_assistant():
+        flash('Su cuenta de asistente está desactivada. Por favor, contacte al administrador.')
+        return redirect(url_for('main.dashboard'))
+        
+    resp = make_response(redirect(url_for('main.dashboard')))
     resp.delete_cookie('asistente', path='/')
     flash('Desenrolamiento exitoso')
     return resp

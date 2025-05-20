@@ -48,20 +48,31 @@ def enroll():
     if not current_user.is_active_assistant():
         flash('Su cuenta de asistente está desactivada. Por favor, contacte al administrador.')
         return redirect(url_for('main.dashboard'))
+    
+    # Obtener el ID de la llamada si se proporcionó
+    call_id = request.args.get('call_id')
         
     if request.method == 'POST':
         code = request.form.get('code')
         assistant = Assistant.query.filter_by(code=code, active=True).first()
         
         if assistant:
-            resp = make_response(redirect(url_for('main.dashboard')))
+            # Determinar la URL de redirección
+            if call_id:
+                # Si hay un ID de llamada, redirigir a atender esa llamada después del enrolamiento
+                redirect_url = f"/atender/{call_id}"
+            else:
+                # Caso normal: redirigir al dashboard
+                redirect_url = url_for('main.dashboard')
+            
+            resp = make_response(redirect(redirect_url))
             resp.set_cookie('asistente', code, max_age=12*60*60)  # Cookie válida para 12 horas
             flash(f'Enrolamiento exitoso. Bienvenido {assistant.name}')
             return resp
         else:
             flash('Código de asistente inválido')
     
-    return render_template('enroll.html')
+    return render_template('enroll.html', call_id=call_id)
 
 @main_bp.route('/desenroll')
 @login_required

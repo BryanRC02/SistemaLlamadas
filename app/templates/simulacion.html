@@ -272,6 +272,9 @@
                             alert('Llamada atendida correctamente');
                             // Recargar la página para mostrar el estado actualizado
                             location.reload();
+                        } else if (data.status === 'redirect') {
+                            // Redirigir a la URL proporcionada (para enrolamiento)
+                            window.location.href = data.redirect_url;
                         } else {
                             alert(`Error: ${data.message}`);
                         }

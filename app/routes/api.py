@@ -122,13 +122,23 @@ def attend_call(call_id):
     """Manejar la atención de una llamada por parte de un asistente"""
     # Obtener el código del asistente desde la cookie
     assistant_code = request.cookies.get('asistente')
+    
+    # Si no hay cookie de asistente, redirigir a la página de enrolamiento con el ID de la llamada
     if not assistant_code:
-        return jsonify({'status': 'error', 'message': 'No se ha enrolado un asistente'})
+        return jsonify({
+            'status': 'redirect', 
+            'redirect_url': f'/enroll?call_id={call_id}',
+            'message': 'Se requiere enrolar el dispositivo'
+        })
     
     # Encontrar el asistente en la base de datos
     assistant = Assistant.query.filter_by(code=assistant_code, active=True).first()
     if not assistant:
-        return jsonify({'status': 'error', 'message': 'Código de asistente inválido'})
+        return jsonify({
+            'status': 'redirect', 
+            'redirect_url': f'/enroll?call_id={call_id}',
+            'message': 'Código de asistente inválido o inactivo'
+        })
     
     # Encontrar la llamada en la base de datos
     call = Call.query.get(call_id)

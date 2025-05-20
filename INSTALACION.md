@@ -60,7 +60,7 @@ sudo mkdir -p /opt/SistemaLlamadas
 sudo chown $USER:$USER /opt/SistemaLlamadas
 
 # Clonar repositorio o copiar archivos
-git clone <URL_REPOSITORIO> /opt/SistemaLlamadas
+git clone https://github.com/BryanRC02/SistemaLlamadas /opt/SistemaLlamadas
 cd /opt/SistemaLlamadas
 
 # Crear y activar entorno virtual

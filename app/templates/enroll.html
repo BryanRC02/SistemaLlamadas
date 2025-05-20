@@ -11,11 +11,16 @@
             </div>
             <div class="card-body">
                 <p class="text-center mb-4">Introduzca su código de asistente para enrolarse en este dispositivo.</p>
-                <form method="POST" action="{{ url_for('main.enroll') }}">
+                <form method="POST" action="{{ url_for('main.enroll') }}{% if call_id %}?call_id={{ call_id }}{% endif %}">
                     <div class="mb-3">
                         <label for="code" class="form-label">Código de Asistente</label>
                         <input type="text" class="form-control form-control-lg text-center" id="code" name="code" required autocomplete="off" maxlength="6" style="font-size: 24px; letter-spacing: 5px;">
                     </div>
+                    {% if call_id %}
+                    <div class="alert alert-info">
+                        <small>Después de enrolarse, será redirigido para atender la llamada pendiente.</small>
+                    </div>
+                    {% endif %}
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg">Enrolar</button>
                     </div>

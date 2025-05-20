@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models.models import User, Assistant, Call
+from app.models.models import User, Assistant, Call, Relay
 from datetime import datetime, timedelta
 import random
 
@@ -108,12 +108,49 @@ def init_db():
         # Commit para aplicar los cambios en la base de datos
         db.session.commit()
         
+        # Crear los relés para cada habitación y cama
+        # Usaremos un formato de IP basado en la habitación: 192.168.{planta}.{habitación}
+        relays = []
+        
+        # Crear relés para las plantas 1-5, habitaciones 1-10, camas A y B
+        for floor in range(1, 6):
+            for room_num in range(1, 11):
+                room_id = floor * 100 + room_num
+                
+                # Crear relé para la cama A
+                relay_a = Relay(
+                    room=str(room_id),
+                    bed='A',
+                    ip_address=f"192.168.{floor}.{room_num}",
+                    endpoint='/relay/0',
+                    active=True
+                )
+                relays.append(relay_a)
+                
+                # Crear relé para la cama B
+                relay_b = Relay(
+                    room=str(room_id),
+                    bed='B',
+                    ip_address=f"192.168.{floor}.{room_num + 50}",  # Usamos +50 para diferenciar las camas
+                    endpoint='/relay/0',
+                    active=True
+                )
+                relays.append(relay_b)
+        
+        # Agregar todos los relés a la base de datos
+        for relay in relays:
+            db.session.add(relay)
+        
+        # Commit para aplicar los cambios en la base de datos
+        db.session.commit()
+        
         print("Base de datos inicializada con datos de prueba.")
         print("Usuario administrador: admin / admin123")
         print("Usuario regular: user / user123")
         print("Códigos de los asistentes activos:", ", ".join([a.code for a in assistants if a.active]))
         print("Usuarios de asistentes creados con contraseña por defecto: PPP2025")
         print("Nombres de usuario de asistentes:", ", ".join([f"{a.name}" for a in assistants]))
+        print(f"Se crearon {len(relays)} relés para las habitaciones y camas")
 
 if __name__ == '__main__':
     init_db() 

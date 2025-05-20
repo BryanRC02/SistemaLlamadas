@@ -23,4 +23,7 @@ class Config:
     # Configuración de sistema de relés
     SERVER_IP = '172.17.0.10'  # IP del servidor para recibir llamadas
     RELAY_BASE_IP = '172.17.2'  # Base de IP para los relés (formato: 172.17.2.xxx)
-    RELAY_ENDPOINT = '/relay/0'  # Endpoint para controlar los relés 
+    RELAY_ENDPOINT = '/relay/0'  # Endpoint para controlar los relés
+    
+    # Modo de simulación (True = usar imágenes locales, False = conectar a relés físicos)
+    SIMULATION_MODE = True 

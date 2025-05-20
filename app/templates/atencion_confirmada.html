@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Llamada Atendida</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h5>¡La llamada ha sido atendida exitosamente!</h5>
+                        <p>Habitación: <strong>{{ call.room }}</strong> - Cama: <strong>{{ call.bed }}</strong></p>
+                        <p>Atendida por: <strong>{{ assistant.name }}</strong></p>
+                        <p>Hora de atención: <strong>{{ call.attention_time.strftime('%H:%M:%S') }}</strong></p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('api.presence', room=call.room, bed=call.bed) }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check-circle"></i> Confirmar Presencia en Habitación
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Presione el botón cuando llegue a la habitación para confirmar su presencia
+                            y finalizar la atención de la llamada.
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                        </a>
+                        <a href="{{ url_for('main.simulacion') }}" class="btn btn-info">
+                            <i class="fas fa-map"></i> Ver Mapa de Habitaciones
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

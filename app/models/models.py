@@ -61,6 +61,22 @@ class Call(db.Model):
     def __repr__(self):
         return f'<Call Room:{self.room} Bed:{self.bed} Status:{self.status}>'
 
+class Relay(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    room = db.Column(db.String(10))
+    bed = db.Column(db.String(1))
+    ip_address = db.Column(db.String(15))  # Formato: 192.168.1.100
+    endpoint = db.Column(db.String(50), default='/relay/0')  # Endpoint para controlar el relé
+    active = db.Column(db.Boolean, default=True)
+    
+    def __repr__(self):
+        return f'<Relay Room:{self.room} Bed:{self.bed} IP:{self.ip_address}>'
+    
+    @classmethod
+    def get_for_room_bed(cls, room, bed):
+        """Obtiene el relé para una habitación y cama específicas"""
+        return cls.query.filter_by(room=room, bed=bed, active=True).first()
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id)) 

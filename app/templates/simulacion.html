@@ -52,30 +52,11 @@
         margin-bottom: 10px;
     }
     
-    .indicator {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 5px;
-    }
-    
-    .indicator-off {
-        background-color: #ccc;
-    }
-    
-    .indicator-waiting {
-        background-color: #ffc107;
-        animation: blink 1s infinite;
-    }
-    
-    .indicator-attending {
-        background-color: #28a745;
-    }
-    
-    .indicator-confirmed {
-        background-color: #007bff;
-        box-shadow: 0 0 10px #007bff;
+    .bed-title {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        margin-right: 10px;
     }
     
     .status-badge {
@@ -112,10 +93,17 @@
         border-color: #17a2b8;
     }
     
-    @keyframes blink {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
+    .light-indicator {
+        width: 35px;
+        height: 35px;
+        margin-left: auto;
+    }
+    
+    .room-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
     }
 </style>
 {% endblock %}
@@ -151,21 +139,53 @@
             {% for room_num in range(1, 11) %}
             <div class="col-md-6 col-lg-4">
                 <div class="room">
-                    <h3>Habitación {{ floor }}{{ "%02d"|format(room_num) }}</h3>
+                    <div class="room-header">
+                        <h3>Habitación {{ floor }}{{ "%02d"|format(room_num) }}</h3>
+                    </div>
                     
                     {% for bed_letter in ['A', 'B'] %}
                     <div class="bed">
                         <div class="bed-header">
-                            <h4>Cama {{ bed_letter }}</h4>
+                            <div class="bed-title">Cama {{ bed_letter }}</div>
                             {% set room_bed_key = (floor * 100 + room_num)|string + '_' + bed_letter %}
                             {% if room_bed_key in call_map %}
                                 {% if call_map[room_bed_key].status == 'pending' %}
-                                    <div class="indicator indicator-waiting" title="Esperando asistencia"></div>
+                                    {% if room_bed_key in relay_map %}
+                                        <img src="{{ url_for('api.relay_control', relay_id=relay_map[room_bed_key].id, turn='off') }}" 
+                                             alt="Piloto apagado" 
+                                             class="light-indicator" 
+                                             title="Llamada pendiente - Relé #{{ relay_map[room_bed_key].id }}">
+                                    {% else %}
+                                        <img src="{{ url_for('api.relay_control', relay_id=0, turn='off') }}" 
+                                             alt="Piloto apagado" 
+                                             class="light-indicator" 
+                                             title="Llamada pendiente (relé no encontrado)">
+                                    {% endif %}
                                 {% elif call_map[room_bed_key].status == 'attending' %}
-                                    <div class="indicator indicator-attending" title="Asistencia confirmada"></div>
+                                    {% if room_bed_key in relay_map %}
+                                        <img src="{{ url_for('api.relay_control', relay_id=relay_map[room_bed_key].id, turn='on') }}" 
+                                             alt="Piloto encendido" 
+                                             class="light-indicator" 
+                                             title="Llamada en atención - Relé #{{ relay_map[room_bed_key].id }}">
+                                    {% else %}
+                                        <img src="{{ url_for('api.relay_control', relay_id=0, turn='on') }}" 
+                                             alt="Piloto encendido" 
+                                             class="light-indicator" 
+                                             title="Llamada en atención (relé no encontrado)">
+                                    {% endif %}
                                 {% endif %}
                             {% else %}
-                                <div class="indicator indicator-off" title="Sin llamadas"></div>
+                                {% if room_bed_key in relay_map %}
+                                    <img src="{{ url_for('api.relay_control', relay_id=relay_map[room_bed_key].id, turn='off') }}" 
+                                         alt="Piloto apagado" 
+                                         class="light-indicator" 
+                                         title="Sin llamadas - Relé #{{ relay_map[room_bed_key].id }}">
+                                {% else %}
+                                    <img src="{{ url_for('api.relay_control', relay_id=0, turn='off') }}" 
+                                         alt="Piloto apagado" 
+                                         class="light-indicator" 
+                                         title="Sin llamadas (relé no encontrado)">
+                                {% endif %}
                             {% endif %}
                         </div>
                         
@@ -274,6 +294,7 @@
                             location.reload();
                         } else if (data.status === 'redirect') {
                             // Redirigir a la URL proporcionada (para enrolamiento)
+                            alert('Redireccionando para enrolar dispositivo...');
                             window.location.href = data.redirect_url;
                         } else {
                             alert(`Error: ${data.message}`);

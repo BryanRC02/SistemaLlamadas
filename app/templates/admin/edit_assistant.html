@@ -16,6 +16,10 @@
                         <input type="text" class="form-control" id="name" name="name" value="{{ assistant.name }}" required>
                     </div>
                     <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ assistant_user.email if assistant_user else '' }}">
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Código</label>
                         <input type="text" class="form-control" value="{{ assistant.code }}" readonly>
                         <div class="form-text text-muted">El código no se puede modificar.</div>

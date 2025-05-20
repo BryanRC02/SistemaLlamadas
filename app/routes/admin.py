@@ -31,6 +31,7 @@ def index():
     # Crear diccionarios para almacenar la información del usuario asociado a cada asistente
     assistant_users = {}
     assistant_is_admin = {}
+    assistant_emails = {}
     
     # Buscar los usuarios asociados a cada asistente
     for assistant in assistants:
@@ -38,15 +39,18 @@ def index():
         if user:
             assistant_users[assistant.id] = user.username
             assistant_is_admin[assistant.id] = user.is_admin
+            assistant_emails[assistant.id] = user.email
         else:
             assistant_users[assistant.id] = "No tiene usuario"
             assistant_is_admin[assistant.id] = False
+            assistant_emails[assistant.id] = "N/A"
     
     return render_template(
         'admin/assistants.html', 
         assistants=assistants, 
         assistant_users=assistant_users,
-        assistant_is_admin=assistant_is_admin
+        assistant_is_admin=assistant_is_admin,
+        assistant_emails=assistant_emails
     )
 
 @admin_bp.route('/new', methods=['GET', 'POST'])
@@ -54,6 +58,7 @@ def index():
 def new_assistant():
     if request.method == 'POST':
         name = request.form.get('name')
+        email = request.form.get('email')
         password = request.form.get('password')
         is_admin = 'is_admin' in request.form
         
@@ -70,17 +75,22 @@ def new_assistant():
         
         # Crear un usuario asociado para el asistente
         username = name
-        email = f"{name.strip().lower()}@sistemallamadas.local"
+        user_email = email if email else f"{name.strip().lower()}@sistemallamadas.local"
         
         # Verificar si el nombre de usuario ya existe
         if User.query.filter_by(username=username).first():
             flash('Error: Ya existe un usuario con ese nombre de usuario')
             return redirect(url_for('admin.new_assistant'))
         
+        # Verificar si el correo electrónico ya está en uso
+        if User.query.filter_by(email=user_email).first():
+            flash('Error: Ya existe un usuario con ese correo electrónico')
+            return redirect(url_for('admin.new_assistant'))
+        
         # Crear el usuario
         user = User(
             username=username, 
-            email=email, 
+            email=user_email, 
             is_assistant=True, 
             is_admin=is_admin,
             assistant_code=code
@@ -110,6 +120,7 @@ def edit_assistant(id):
     
     if request.method == 'POST':
         name = request.form.get('name')
+        email = request.form.get('email')
         active = 'active' in request.form
         is_admin = 'is_admin' in request.form
         password = request.form.get('password')
@@ -125,6 +136,15 @@ def edit_assistant(id):
         if assistant_user:
             assistant_user.is_admin = is_admin
             
+            # Actualizar el correo electrónico si se proporcionó uno
+            if email:
+                # Verificar si el correo ya está en uso por otro usuario
+                existing_user = User.query.filter(User.email == email, User.id != assistant_user.id).first()
+                if existing_user:
+                    flash('El correo electrónico ya está en uso por otro usuario')
+                    return redirect(url_for('admin.edit_assistant', id=id))
+                assistant_user.email = email
+            
             # Actualizar la contraseña si se proporcionó una
             if password:
                 assistant_user.set_password(password)
@@ -132,13 +152,18 @@ def edit_assistant(id):
         else:
             # Si no hay usuario asociado, crear uno
             username = assistant.name
-            email = f"{username.strip().lower()}@sistemallamadas.local"
+            user_email = email if email else f"{username.strip().lower()}@sistemallamadas.local"
             
             # Verificar si el nombre de usuario ya existe
             if not User.query.filter_by(username=username).first():
+                # Verificar si el correo ya está en uso
+                if User.query.filter_by(email=user_email).first():
+                    flash('El correo electrónico ya está en uso por otro usuario')
+                    return redirect(url_for('admin.edit_assistant', id=id))
+                
                 new_user = User(
                     username=username, 
-                    email=email, 
+                    email=user_email, 
                     is_assistant=True, 
                     is_admin=is_admin,
                     assistant_code=assistant.code

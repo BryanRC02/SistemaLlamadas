@@ -29,6 +29,7 @@
                                 <th>Nombre</th>
                                 <th>Código</th>
                                 <th>Usuario</th>
+                                <th>Correo</th>
                                 <th>Estado</th>
                                 <th>Administrador</th>
                                 <th>Acciones</th>
@@ -41,6 +42,7 @@
                                 <td>{{ assistant.name }}</td>
                                 <td><code>{{ assistant.code }}</code></td>
                                 <td>{{ assistant_users[assistant.id] }}</td>
+                                <td>{{ assistant_emails[assistant.id] }}</td>
                                 <td>
                                     {% if assistant.active %}
                                     <span class="badge bg-success">Activo</span>

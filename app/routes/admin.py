@@ -69,8 +69,8 @@ def new_assistant():
         db.session.add(assistant)
         
         # Crear un usuario asociado para el asistente
-        username = f"asistente_{code.lower()}"
-        email = f"{username}@sistemallamadas.local"
+        username = name
+        email = f"{name.strip().lower()}@sistemallamadas.local"
         
         # Verificar si el nombre de usuario ya existe
         if User.query.filter_by(username=username).first():
@@ -131,8 +131,8 @@ def edit_assistant(id):
                 flash('Contraseña actualizada con éxito')
         else:
             # Si no hay usuario asociado, crear uno
-            username = f"asistente_{assistant.code.lower()}"
-            email = f"{username}@sistemallamadas.local"
+            username = assistant.name
+            email = f"{username.strip().lower()}@sistemallamadas.local"
             
             # Verificar si el nombre de usuario ya existe
             if not User.query.filter_by(username=username).first():

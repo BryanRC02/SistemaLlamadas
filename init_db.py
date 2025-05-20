@@ -59,14 +59,7 @@ def init_db():
         
         # Crear algunas llamadas
         now = datetime.utcnow()
-        
-        # Llamadas pendientes
-        for i in range(3):
-            room = random.randint(101, 105)
-            bed = random.choice(['a', 'b'])
-            call = Call(room=str(room), bed=bed, call_time=now - timedelta(minutes=random.randint(5, 30)), status='pending')
-            db.session.add(call)
-        
+                
         # Llamadas en atención
         for i in range(2):
             room = random.randint(101, 105)
